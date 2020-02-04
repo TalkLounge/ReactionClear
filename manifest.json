@@ -1,0 +1,16 @@
+{
+	"manifest_version": 2,
+	"name": "ReactionClear",
+	"version": "1.0",
+	"description": "Clears reaction videos",
+	"homepage_url": "https://github.com/TalkLounge/ReactionClear",
+	"icons": {
+		"64": "icons/ReactionClear-64x64.png",
+		"32": "icons/ReactionClear-32x32.png",
+		"16": "icons/ReactionClear-16x16.png"
+	},
+	"content_scripts": [{
+		"matches": ["https://www.youtube.com/*"],
+		"js": ["js/jquery-3.4.1.slim.min.js", "js/inject.js"]
+	}]
+}
