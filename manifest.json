@@ -9,6 +9,13 @@
 		"32": "icons/ReactionClear-32x32.png",
 		"16": "icons/ReactionClear-16x16.png"
 	},
+	"browser_action": {
+		"default_icon": "icons/ReactionClear.png",
+		"default_popup": "popup/index.html"
+	},
+	"permissions": [
+		"storage"
+	],
 	"content_scripts": [{
 		"matches": ["https://www.youtube.com/*"],
 		"js": ["libs/jquery-3.4.1.slim.min.js", "inject/script.js"]
