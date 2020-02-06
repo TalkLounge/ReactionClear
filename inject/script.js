@@ -2,8 +2,7 @@ browser.storage.sync.get(["searchTerms"], function(data) {
 	if (typeof(data) === "undefined" || typeof(data["searchTerms"]) === "undefined")  {
 		//return;
 	}
-	var searchTerms = [{"block": {"title": "Reaktion"}}, {"block": {"title": "reagiert"}}, {"block": {"title": "reagiere"}}, {"block": {"title": "reaction"}}, {"block": {"title": "reacts"}}, {"block": {"title": "ungeklickt"}}, {"block": {"channel": "Hochformat"}}, {"block": {"channel": "ConCrafter"}}, {"block": {"channel": "JAUSE"}}];//data["searchTerms"];
-	// {{"block": {"channel": "unge", "title": "ungeklickt"}, "exclude": [{"channel": "unge", "title": "ungeklickt"}]}}
+	var searchTerms = [{"block": {"title": "Reaktion"}}, {"block": {"title": "reagiert"}}, {"block": {"title": "reagiere"}}, {"block": {"title": "reaction"}}, {"block": {"title": "reacts"}}, {"block": {"title": "ungeklickt"}}, {"block": {"channel": "Hochformat"}}, {"block": {"channel": "ConCrafter"}}, {"block": {"channel": "JAUSE"}}, {"block": {"channel": "KuchenTV Uncut"}}];//data["searchTerms"];
 	
 	/*
 	block.channel & block.title = exclude.title
@@ -15,14 +14,20 @@ browser.storage.sync.get(["searchTerms"], function(data) {
 		return new Promise(resolve => setTimeout(resolve, ms));
 	}
 	
-	var count = {"youtubeStartpage": 0, "youtubeRecommended": 0};
+	var running = {"youtubeStartpage": false, "youtubeRecommended": false};
+	var count = {"youtubeStartpage": 1, "youtubeRecommended": 1};
 	
 	async function youtubeClear(elemList, title1, title2, channel1, channel2, elem1, elem2, countName) {
+		if (running[countName]) {
+			return;
+		}
+		running[countName] = true;
 		elemList = $(elemList).length;
-		for (var i = count[countName] + 1; i <= elemList; i++) {
+		for (var i = count[countName]; i <= elemList; i++) {
+			await sleep(50);
 			var titleCc = $(title1 + i + title2).html();
 			var channelCc = $(channel1 + i + channel2).html();
-			if (titleCc && channelCc) {
+			if (titleCc && channelCc && $(elem1 + i + elem2).css("display") !== "none") {
 				titleCc = titleCc.trim();
 				channelCc = channelCc.trim();
 				var title = titleCc.toLowerCase();
@@ -63,10 +68,13 @@ browser.storage.sync.get(["searchTerms"], function(data) {
 						break;
 					}
 				}
+			} else if (! titleCc || ! channelCc) {
+				count[countName] = i;
+				running[countName] = false;
+				return;
 			}
-			await sleep(100);
 		}
-		count[countName] = elemList;
+		running[countName] = false;
 	}
 	
 	function youtubeStartpage() {
@@ -84,12 +92,17 @@ browser.storage.sync.get(["searchTerms"], function(data) {
 	
 	setTimeout(youtubeClearAll, 1000);
 	
-	var oldHeight = $(document).height();
-	$(document).scroll(function() {
-		var newHeight = $(document).height();
-		if (newHeight > oldHeight) {
-			oldHeight = newHeight;
+	var runningScroll = false;
+	var oldScroll = $(document).scrollTop();
+	$(document).on("scroll", function() {
+		var newScroll = $(document).scrollTop();
+		if (newScroll > oldScroll && ! runningScroll) {
+			oldScroll = newScroll;
+			runningScroll = true;
 			setTimeout(youtubeClearAll, 1000);
+			setTimeout(function() {
+				runningScroll = false;
+			}, 500);
 		}
 	});
 	
@@ -98,9 +111,10 @@ browser.storage.sync.get(["searchTerms"], function(data) {
 		var newURL = document.URL;
 		if (newURL !== oldURL) {
 			oldURL = newURL;
-			count["youtubeStartpage"] = 0;
-			count["youtubeRecommended"] = 0;
-			setTimeout(youtubeClearAll, 1500);
+			oldScroll = $(document).scrollTop();
+			count["youtubeStartpage"] = 1;
+			count["youtubeRecommended"] = 1;
+			setTimeout(youtubeClearAll, 1000);
 		}
 	}
 	
