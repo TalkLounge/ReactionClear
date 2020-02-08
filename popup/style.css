@@ -1,0 +1,32 @@
+table {
+	margin: 0px !important;
+}
+
+span {
+	cursor: pointer;
+}
+
+.iconAdd {
+	filter: sepia(1) saturate(55) hue-rotate(90deg);
+}
+
+.noneDisplay {
+	display: none;
+}
+
+.no-border-bottom {
+	border-bottom: 0px !important;
+}
+
+.no-border-top {
+	border-top: 0px !important;
+}
+
+.no-padding {
+	padding: 0px !important;
+}
+
+.inputs {
+	padding: 1% !important;
+	height: 100% !important;
+}
