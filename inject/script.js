@@ -1,5 +1,6 @@
 var searchTerms = [
-	{"description": "Reactions", "block": [
+	{"name": "Reactions",
+	 "block": [
 		{"title": "Reaktion"},
 		{"title": "reagiert"},
 		{"title": "reagiere"},
@@ -7,14 +8,17 @@ var searchTerms = [
 		{"title": "reacts"},
 		{"title": "ungeklickt"},
 		{"channel": "KuchenTV Uncut"}
-	], "exclude": [
+	], "except": [
 		{"title": "Reved"}
-	]}, {"block": [
-		{"channel": "ConCrafter"}
-	]}, {"block": [
-		{"channel": "Hochformat"}
-	]}, {"block": [
-		{"channel": "JAUSE"}
+	]}, {"name": "ConCrafter",
+		 "block": [
+			 {"channel": "ConCrafter"}
+	]}, {"name": "Hochformat",
+		 "block": [
+			 {"channel": "Hochformat"}
+	]}, {"name": "JAUSE",
+		 "block": [
+			 {"channel": "JAUSE"}
 	]}
 ];
 
@@ -31,9 +35,9 @@ function getSearchTerms() {
 getSearchTerms();
 
 /*
-block.channel & block.title = exclude.title
-block.title = exclude.channel | exclude.title
-block.channel = exclude.title
+block.channel & block.title = except.title
+block.title = except.channel | except.title
+block.channel = except.title
 */
 
 function sleep(ms) {
@@ -72,7 +76,7 @@ async function youtubeClear(elemList, title1, title2, channel1, channel2, elem1,
 				if (j === 0) {
 					console.log("searchTermsLoop");
 				}
-				var exclude = searchTerms[j]["exclude"] || {};
+				var except = searchTerms[j]["except"] || {};
 				for (var l = 0; l < (searchTerms[j]["block"] || {}).length; l++) {
 					if (j === 0 && l === 0) {
 						console.log("blockLoop");
@@ -80,24 +84,24 @@ async function youtubeClear(elemList, title1, title2, channel1, channel2, elem1,
 					var block = searchTerms[j]["block"][l];
 					if (block["channel"] && block["channel"].toLowerCase() === channel && block["title"] && title.indexOf(block["title"].toLowerCase()) !== -1) {
 						found = true;
-						for (var k = 0; k < exclude.length; k++) {
-							if (exclude[k]["title"] && title.indexOf(exclude[k]["title"].toLowerCase()) !== -1) {
+						for (var k = 0; k < except.length; k++) {
+							if (except[k]["title"] && title.indexOf(except[k]["title"].toLowerCase()) !== -1) {
 								found = false;
 								break;
 							}
 						}
 					} else if (block["title"] && title.indexOf(block["title"].toLowerCase()) !== -1) {
 						found = true;
-						for (var k = 0; k < exclude.length; k++) {
-							if ((exclude[k]["channel"] && channel === exclude[k]["channel"].toLowerCase()) || (exclude[k]["title"] && title.indexOf(exclude[k]["title"].toLowerCase()) !== -1)) {
+						for (var k = 0; k < except.length; k++) {
+							if ((except[k]["channel"] && channel === except[k]["channel"].toLowerCase()) || (except[k]["title"] && title.indexOf(except[k]["title"].toLowerCase()) !== -1)) {
 								found = false;
 								break;
 							}
 						}
 					} else if (block["channel"] && block["channel"].toLowerCase() === channel) {
 						found = true;
-						for (var k = 0; k < exclude.length; k++) {
-							if (exclude[k]["title"] && title.indexOf(exclude[k]["title"].toLowerCase()) !== -1) {
+						for (var k = 0; k < except.length; k++) {
+							if (except[k]["title"] && title.indexOf(except[k]["title"].toLowerCase()) !== -1) {
 								found = false;
 								break;
 							}
