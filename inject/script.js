@@ -1,32 +1,8 @@
-var searchTerms = [
-	{"name": "Reactions",
-	 "block": [
-		{"title": "Reaktion"},
-		{"title": "reagiert"},
-		{"title": "reagiere"},
-		{"title": "reaction"},
-		{"title": "reacts"},
-		{"title": "ungeklickt"},
-		{"channel": "KuchenTV Uncut"}
-	], "except": [
-		{"title": "Reved"}
-	]}, {"name": "ConCrafter",
-		 "block": [
-			 {"channel": "ConCrafter"}
-	]}, {"name": "Hochformat",
-		 "block": [
-			 {"channel": "Hochformat"}
-	]}, {"name": "JAUSE",
-		 "block": [
-			 {"channel": "JAUSE"}
-	]}
-];
+var searchTerms = [];
 
 function getSearchTerms() {
-	browser.storage.sync.get(["searchTerms"], function(data) {
-		if (typeof(data) === "undefined" || typeof(data["searchTerms"]) === "undefined")  {
-			return;
-		} else {
+	chrome.storage.sync.get(["searchTerms"], function(data) {
+		if (typeof(data) !== "undefined" && typeof(data["searchTerms"]) !== "undefined")  {
 			searchTerms = data["searchTerms"];
 		}
 	});
@@ -51,21 +27,13 @@ async function youtubeClear(elemList, title1, title2, channel1, channel2, elem1,
 	if (running[countName]) {
 		return;
 	}
-	if (countName === "youtubeStartpage") {
-		console.log("youtubeClear called");
-	}
 	running[countName] = true;
 	elemList = $(elemList).length;
-	var bla = false;
 	for (var i = count[countName]; i <= elemList; i++) {
 		await sleep(sleepMs);
 		var titleCc = $(title1 + i + title2).html();
 		var channelCc = $(channel1 + i + channel2).html();
 		if (titleCc && channelCc && $(elem1 + i + elem2).css("display") !== "none") {
-			if (! bla) {
-				bla = true;
-				console.log("title found");
-			}
 			titleCc = titleCc.trim();
 			channelCc = channelCc.trim();
 			var title = titleCc.toLowerCase();
@@ -73,14 +41,8 @@ async function youtubeClear(elemList, title1, title2, channel1, channel2, elem1,
 			var found = false;
 			searchTermsLoop:
 			for (var j = 0; j < searchTerms.length; j++) {
-				if (j === 0) {
-					console.log("searchTermsLoop");
-				}
 				var except = searchTerms[j]["except"] || {};
 				for (var l = 0; l < (searchTerms[j]["block"] || {}).length; l++) {
-					if (j === 0 && l === 0) {
-						console.log("blockLoop");
-					}
 					var block = searchTerms[j]["block"][l];
 					if (block["channel"] && block["channel"].toLowerCase() === channel && block["title"] && title.indexOf(block["title"].toLowerCase()) !== -1) {
 						found = true;
@@ -115,13 +77,12 @@ async function youtubeClear(elemList, title1, title2, channel1, channel2, elem1,
 				}
 			}
 		} else if (! titleCc || ! channelCc) {
-			if (! bla) {
-				bla = true;
-				console.log("title not found");
+			if (! $(title1 + (i + 1) + title2).html()) {
+				console.log("Title not found");
+				count[countName] = i;
+				running[countName] = false;
+				return;
 			}
-			count[countName] = i;
-			running[countName] = false;
-			return;
 		}
 	}
 	running[countName] = false;
@@ -186,8 +147,8 @@ function checkLength() {
 
 setInterval(checkLength, 1000);
 
-browser.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === 1) {
-		getSearchTerms();
+		searchTerms = request.searchTerms;
 	}
 });

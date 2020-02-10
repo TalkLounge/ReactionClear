@@ -1,26 +1,8 @@
-var searchTerms = [
-	{"name": "Reactions",
-	 "block": [
-		{"title": "Reaktion"},
-		{"title": "reagiert"},
-		{"title": "reagiere"},
-		{"title": "reaction"},
-		{"title": "reacts"},
-		{"title": "ungeklickt"},
-		{"channel": "KuchenTV Uncut"}
-	], "except": [
-		{"title": "Reved"}
-	]}, {"name": "ConCrafter",
-		 "block": [
-			 {"channel": "ConCrafter"}
-	]}, {"name": "Hochformat",
-		 "block": [
-			 {"channel": "Hochformat"}
-	]}, {"name": "JAUSE",
-		 "block": [
-			 {"channel": "JAUSE"}
-	]}
-];
+var searchTerms = [];
+
+function copyJSON(json) {
+	return JSON.parse(JSON.stringify(json));
+}
 
 function newElement(tagName, attributes, content) {
 	var tag = document.createElement(tagName);
@@ -33,7 +15,11 @@ function newElement(tagName, attributes, content) {
 
 function generateTable() {
 	var tbody = "";
+	var rowCountBlock = -1;
+	var rowCountExcept = -1;
 	for (var i = 0; i < searchTerms.length; i++) {
+		rowCountBlock++;
+		rowCountExcept++;
 		var searchTerm = searchTerms[i];
 		var name = searchTerm["name"] || "";
 		var block = searchTerm["block"] || [];
@@ -45,69 +31,261 @@ function generateTable() {
 			tdOuter["rowspan"] = rowspan;
 			tdOuter["class"] = "align-middle";
 		}
-		var tdBlock = {};
+		
+		var tdBlock = {"class": "block"};
 		if (except.length > 1 && block.length === 1) {
 			tdBlock["rowspan"] = except.length;
 		}
-		var tdExcept = {};
+		
+		var tdExcept = {"class": "except"};
 		if (block.length > 1 && except.length === 1) {
 			tdExcept["rowspan"] = block.length;
 		}
-		tbody += newElement("tr", null,
+		
+		var tdBlockIcons = copyJSON(tdBlock);
+		tdBlockIcons["data-row"] = rowCountBlock;
+		tdBlockIcons["data-type"] = "block";
+		tdBlockIcons["data-typeid"] = 0;
+		
+		var tdExceptIcons = copyJSON(tdExcept);
+		tdExceptIcons["data-row"] = rowCountExcept;
+		tdExceptIcons["data-type"] = "except";
+		tdExceptIcons["data-typeid"] = 0;
+		
+		tbody += newElement("tr", {"data-id": i},
 							newElement("td", tdOuter, name) +
 							newElement("td", tdBlock, block[0] ? block[0]["channel"] || "" : "") +
 							newElement("td", tdBlock, block[0] ? block[0]["title"] || "" : "") +
-							newElement("td", tdBlock,
-									   newElement("span", null, "&#x270F") +
+							newElement("td", tdBlockIcons,
+									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
 									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-									   newElement("span", {"class": "noneDisplay"}, "&#x2714") +
-									   newElement("span", {"class": "noneDisplay"}, "&#x274c")) +
+									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
+									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) +
 							newElement("td", tdExcept, except[0] ? except[0]["channel"] || "" : "") +
 							newElement("td", tdExcept, except[0] ? except[0]["title"] || "" : "") +
-							newElement("td", tdExcept,
-									   newElement("span", null, "&#x270F") +
+							newElement("td", tdExceptIcons,
+									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
 									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-									   newElement("span", {"class": "noneDisplay"}, "&#x2714") +
-									   newElement("span", {"class": "noneDisplay"}, "&#x274c")) +
+									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
+									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) +
 							newElement("td", tdOuter,
-									   newElement("span", null, "&#x270F") +
+									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
 									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-									   newElement("span", {"class": "noneDisplay"}, "&#x2714") +
-									   newElement("span", {"class": "noneDisplay"}, "&#x274c")));
+									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
+									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")));
 		
 		for (var j = 1; j < rowspan; j++) {
-			tdBlock = {};
+			if (block[j]) {
+				rowCountBlock++;
+			}
+			
+			if (except[j]) {
+				rowCountExcept++;
+			}
+			
+			tdBlock = {"class": "block"};
 			if (j === block.length && except.length > block.length) {
 				tdBlock["rowspan"] = except.length - block.length + 1;
 			}
-			tdExcept = {};
+			
+			tdExcept = {"class": "except"};
 			if (j === except.length && block.length > except.length) {
 				tdExcept["rowspan"] = block.length - except.length + 1;
 			}
-			tbody += newElement("tr", null,
+			
+			tdBlockIcons = copyJSON(tdBlock);
+			tdBlockIcons["data-row"] = rowCountBlock;
+			tdBlockIcons["data-type"] = "block";
+			tdBlockIcons["data-typeid"] = j;
+			
+			tdExceptIcons = copyJSON(tdExcept);
+			tdExceptIcons["data-row"] = rowCountExcept;
+			tdExceptIcons["data-type"] = "except";
+			tdExceptIcons["data-typeid"] = j;
+			
+			tbody += newElement("tr", {"data-id": i},
 								(block[j] ? newElement("td", tdBlock, block[j]["channel"] || "") : "") +
 								(block[j] ? newElement("td", tdBlock, block[j]["title"] || "") : "") +
-								(block[j] ? newElement("td", tdBlock,
-													   newElement("span", null, "&#x270F") +
+								(block[j] ? newElement("td", tdBlockIcons,
+													   newElement("span", {"class": "iconEdit"}, "&#x270F") +
 													   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-													   newElement("span", {"class": "noneDisplay"}, "&#x2714") +
-													   newElement("span", {"class": "noneDisplay"}, "&#x274c")) : "") +
+													   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
+													   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) : "") +
 								(except[j] ? newElement("td", tdExcept, except[j]["channel"] || "") : "") +
 								(except[j] ? newElement("td", tdExcept, except[j]["title"] || "") : "") +
-								(except[j] ? newElement("td", tdExcept,
-														newElement("span", null, "&#x270F") +
+								(except[j] ? newElement("td", tdExceptIcons,
+														newElement("span", {"class": "iconEdit"}, "&#x270F") +
 														newElement("span", {"class": "iconAdd"}, "&#x2795") +
-														newElement("span", {"class": "noneDisplay"}, "&#x2714") +
-														newElement("span", {"class": "noneDisplay"}, "&#x274c")) : ""));
+														newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
+														newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) : ""));
 		}
+	}
+	
+	if (searchTerms.length === 0) {
+		searchTerms[0] = {"block": [{}], "except": [{}]};
+		tbody += newElement("tr", {"data-id": 0},
+							newElement("td") +
+							newElement("td", {"class": "block"}) +
+							newElement("td", {"class": "block"}) +
+							newElement("td", {"data-type": "block", "data-typeid": 0},
+									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
+									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
+									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
+									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) +
+							newElement("td", {"class": "except"}) +
+							newElement("td", {"class": "except"}) +
+							newElement("td", {"data-type": "except", "data-typeid": 0},
+									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
+									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
+									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
+									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) +
+							newElement("td", null,
+									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
+									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
+									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
+									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")));
 	}
 	
 	$("tbody").empty();
 	$("tbody").append(tbody);
+	
+	$(".iconEdit").click(function() {
+		var span = $(this);
+		var td = span.parent();
+		var tr = td.parent();
+		
+		var dataType = td.data("type");
+		var dataTypeId = td.data("typeid");
+		if (typeof(dataType) === "undefined") {
+			var name = tr.find("td").eq(0);
+			name.toggleClass("no-padding");
+			name.html('<input type="text" class="form-control text-center inputs" value="'+ name.html() +'">');
+		} else {
+			var channel = tr.find("td."+ dataType).eq(0);
+			
+			var klass = "no-padding"
+			if (typeof(channel.attr("rowspan")) === "undefined") {
+				klass += " align-middle";
+			}
+			
+			channel.toggleClass(klass);
+			channel.html('<input type="text" class="form-control text-center inputs" value="'+ channel.html() +'">');
+			
+			var title = tr.find("td."+ dataType).eq(1);
+			title.toggleClass(klass);
+			title.html('<input type="text" class="form-control text-center inputs" value="'+ title.html() +'">');
+		}
+		
+		td.find("span").eq(0).toggleClass("noneDisplay");
+		td.find("span").eq(1).toggleClass("noneDisplay");
+		td.find("span").eq(2).toggleClass("noneDisplay");
+		td.find("span").eq(3).toggleClass("noneDisplay");
+	});
+	$(".iconSave").click(function() {
+		var span = $(this);
+		var td = span.parent();
+		var tr = td.parent();
+		
+		var dataType = td.data("type");
+		var dataTypeId = td.data("typeid");
+		var dataId = tr.data("id");
+		if (typeof(dataType) === "undefined") {
+			var name = tr.find("td").eq(0);
+			var input = name.find("input").eq(0).val().trim();
+			
+			name.toggleClass("no-padding");
+			name.html(input);
+			
+			if (input.length > 0) {
+				searchTerms[dataId]["name"] = input;
+			} else {
+				delete searchTerms[dataId]["name"];
+			}
+			
+			chrome.storage.sync.set({"searchTerms": searchTerms});
+			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
+		} else {
+			var channel = tr.find("td."+ dataType).eq(0);
+			var channelInput = channel.find("input").eq(0).val().trim();
+			
+			var title = tr.find("td."+ dataType).eq(1);
+			var titleInput = title.find("input").eq(0).val().trim();
+			
+			var klass = "no-padding"
+			if (typeof(channel.attr("rowspan")) === "undefined") {
+				klass += " align-middle";
+			}
+			
+			channel.toggleClass(klass);
+			channel.html(channelInput);
+			
+			title.toggleClass(klass);
+			title.html(titleInput);
+			
+			if (typeof(searchTerms[dataId][dataType]) === "undefined") {
+				searchTerms[dataId][dataType] = [];
+			}
+			
+			searchTerms[dataId][dataType][dataTypeId] = {"channel": channelInput, "title": titleInput};
+			chrome.storage.sync.set({"searchTerms": searchTerms});
+			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
+		}
+		td.find("span").eq(0).toggleClass("noneDisplay");
+		td.find("span").eq(1).toggleClass("noneDisplay");
+		td.find("span").eq(2).toggleClass("noneDisplay");
+		td.find("span").eq(3).toggleClass("noneDisplay");
+	});
+	$(".iconDelete").click(function() {
+		var span = $(this);
+		var td = span.parent();
+		var tr = td.parent();
+		
+		var dataType = td.data("type");
+		var dataTypeId = td.data("typeid");
+		var dataId = tr.data("id");
+		if (typeof(dataType) === "undefined") {
+			searchTerms.splice(dataId, 1);
+			
+			chrome.storage.sync.set({"searchTerms": searchTerms});
+			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
+		} else {
+			if (typeof(searchTerms[dataId][dataType]) === "undefined") {
+				searchTerms[dataId][dataType] = [];
+			}
+			
+			searchTerms[dataId][dataType].splice(dataTypeId, 1);
+			if (searchTerms[dataId][dataType].length === 0) {
+				delete searchTerms[dataId][dataType];
+			}
+			
+			chrome.storage.sync.set({"searchTerms": searchTerms});
+			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
+		}
+		generateTable();
+	});
+	$(".iconAdd").click(function() {
+		var span = $(this);
+		var td = span.parent();
+		var tr = td.parent();
+		
+		var dataType = td.data("type");
+		var dataTypeId = td.data("typeid");
+		var dataId = tr.data("id");
+		if (typeof(dataType) === "undefined") {
+			searchTerms.splice(dataId + 1, 0, {});
+		} else {
+			if (typeof(searchTerms[dataId][dataType]) === "undefined") {
+				searchTerms[dataId][dataType] = [];
+			}
+			
+			searchTerms[dataId][dataType].splice(dataTypeId + 1, 0, {});
+		}
+		generateTable();
+	});
 }
 
 function getSearchTerms() {
-	browser.storage.sync.get(["searchTerms"], function(data) {
+	chrome.storage.sync.get(["searchTerms"], function(data) {
 		if (typeof(data) !== "undefined" && typeof(data["searchTerms"]) !== "undefined")  {
 			searchTerms = data["searchTerms"];
 		}
