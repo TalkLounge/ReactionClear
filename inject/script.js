@@ -1,4 +1,30 @@
-var searchTerms = [];
+var searchTerms = [
+	{"name": "Reactions",
+	 "block": [
+		 {"title": "Reaktion"},
+		 {"title": "reagiert"},
+		 {"title": "reagiere"},
+		 {"title": "reaction"},
+		 {"title": "reacts"},
+		 {"title": "ungeklickt"},
+		 {"channel": "KuchenTV Uncut"},
+		 {"channel": "Mehr Anzeigen"}
+	 ], "except": [
+		 {"title": "Reved"}
+	]}, {"name": "ConCrafter",
+		 "block": [
+			 {"channel": "ConCrafter"}
+	]}, {"name": "Hochformat",
+		 "block": [
+			 {"channel": "Hochformat"}
+	]}, {"name": "JAUSE",
+		 "block": [
+			 {"channel": "JAUSE"}
+	]}, {"block": [
+			 {"channel": "Die Crew"},
+			 {"channel": "Richtiger Kevin"}
+	]}
+];
 
 function getSearchTerms() {
 	chrome.storage.sync.get(["searchTerms"], function(data) {
@@ -9,12 +35,6 @@ function getSearchTerms() {
 }
 
 getSearchTerms();
-
-/*
-block.channel & block.title = except.title
-block.title = except.channel | except.title
-block.channel = except.title
-*/
 
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
@@ -78,10 +98,12 @@ async function youtubeClear(elemList, title1, title2, channel1, channel2, elem1,
 			}
 		} else if (! titleCc || ! channelCc) {
 			if (! $(title1 + (i + 1) + title2).html()) {
-				console.log("Title not found");
+				console.log(countName +" Title not found", i, title1 + i + title2, $(title1 + i + title2), titleCc, channelCc, $(title1 + (i + 1) + title2));
 				count[countName] = i;
 				running[countName] = false;
 				return;
+			} else {
+				console.log(countName +" Title2 not found", i, title1 + i + title2, $(title1 + i + title2), titleCc, channelCc, $(title1 + (i + 1) + title2));
 			}
 		}
 	}

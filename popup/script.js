@@ -1,4 +1,30 @@
-var searchTerms = [];
+var searchTerms = [
+	{"name": "Reactions",
+	 "block": [
+		 {"title": "Reaktion"},
+		 {"title": "reagiert"},
+		 {"title": "reagiere"},
+		 {"title": "reaction"},
+		 {"title": "reacts"},
+		 {"title": "ungeklickt"},
+		 {"channel": "KuchenTV Uncut"},
+		 {"channel": "Mehr Anzeigen"}
+	 ], "except": [
+		 {"title": "Reved"}
+	]}, {"name": "ConCrafter",
+		 "block": [
+			 {"channel": "ConCrafter"}
+	]}, {"name": "Hochformat",
+		 "block": [
+			 {"channel": "Hochformat"}
+	]}, {"name": "JAUSE",
+		 "block": [
+			 {"channel": "JAUSE"}
+	]}, {"block": [
+			 {"channel": "Die Crew"},
+			 {"channel": "Richtiger Kevin"}
+	]}
+];
 
 function copyJSON(json) {
 	return JSON.parse(JSON.stringify(json));
@@ -33,12 +59,12 @@ function generateTable() {
 		}
 		
 		var tdBlock = {"class": "block"};
-		if (except.length > 1 && block.length === 1) {
+		if (except.length > 1 && block.length <= 1) {
 			tdBlock["rowspan"] = except.length;
 		}
 		
 		var tdExcept = {"class": "except"};
-		if (block.length > 1 && except.length === 1) {
+		if (block.length > 1 && except.length <= 1) {
 			tdExcept["rowspan"] = block.length;
 		}
 		
@@ -121,7 +147,7 @@ function generateTable() {
 		}
 	}
 	
-	if (searchTerms.length === 0) {
+	if (! searchTerms.length) {
 		searchTerms[0] = {"block": [{}], "except": [{}]};
 		tbody += newElement("tr", {"data-id": 0},
 							newElement("td") +
@@ -254,7 +280,7 @@ function generateTable() {
 			}
 			
 			searchTerms[dataId][dataType].splice(dataTypeId, 1);
-			if (searchTerms[dataId][dataType].length === 0) {
+			if (! searchTerms[dataId][dataType].length) {
 				delete searchTerms[dataId][dataType];
 			}
 			
@@ -275,7 +301,7 @@ function generateTable() {
 			searchTerms.splice(dataId + 1, 0, {});
 		} else {
 			if (typeof(searchTerms[dataId][dataType]) === "undefined") {
-				searchTerms[dataId][dataType] = [];
+				searchTerms[dataId][dataType] = [{}];
 			}
 			
 			searchTerms[dataId][dataType].splice(dataTypeId + 1, 0, {});
@@ -288,6 +314,47 @@ function getSearchTerms() {
 	chrome.storage.sync.get(["searchTerms"], function(data) {
 		if (typeof(data) !== "undefined" && typeof(data["searchTerms"]) !== "undefined")  {
 			searchTerms = data["searchTerms"];
+			
+			for (var i = 0; i < searchTerms.length; i++) {
+				if (searchTerms[i]["block"]) {
+					for (var j = 0; j < searchTerms[i]["block"].length; j++) {
+						if (! searchTerms[i]["block"][j]["channel"]) {
+							delete searchTerms[i]["block"][j]["channel"];
+						}
+						if (! searchTerms[i]["block"][j]["title"]) {
+							delete searchTerms[i]["block"][j]["title"];
+						}
+						if (! searchTerms[i]["block"][j]["channel"] && ! searchTerms[i]["block"][j]["title"]) {
+							searchTerms[i]["block"].splice(j, 1);
+						}
+					}
+					if (! searchTerms[i]["block"].length) {
+						delete searchTerms[i]["block"];
+					}
+				}
+				if (searchTerms[i]["except"]) {
+					for (var j = 0; j < searchTerms[i]["except"].length; j++) {
+						if (! searchTerms[i]["except"][j]["channel"]) {
+							delete searchTerms[i]["except"][j]["channel"];
+						}
+						if (! searchTerms[i]["except"][j]["title"]) {
+							delete searchTerms[i]["except"][j]["title"];
+						}
+						if (! searchTerms[i]["except"][j]["channel"] && ! searchTerms[i]["except"][j]["title"]) {
+							searchTerms[i]["except"].splice(j, 1);
+						}
+					}
+					if (! searchTerms[i]["except"].length) {
+						delete searchTerms[i]["except"];
+					}
+				}
+				if (! searchTerms[i]["block"] && ! searchTerms[i]["except"]) {
+					searchTerms.splice(i, 1);
+				}
+			}
+			
+			chrome.storage.sync.set({"searchTerms": searchTerms});
+			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
 		}
 		generateTable();
 	});
