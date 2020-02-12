@@ -11,9 +11,9 @@ var searchTerms = [
 		 {"channel": "Mehr Anzeigen"}
 	 ], "except": [
 		 {"title": "Reved"}
-	]}, {"name": "ConCrafter",
+	]}, {"name": "Luca",
 		 "block": [
-			 {"channel": "ConCrafter"}
+			 {"channel": "Luca"}
 	]}, {"name": "Hochformat",
 		 "block": [
 			 {"channel": "Hochformat"}
@@ -22,9 +22,11 @@ var searchTerms = [
 			 {"channel": "JAUSE"}
 	]}, {"block": [
 			 {"channel": "Die Crew"},
-			 {"channel": "Richtiger Kevin"}
+			 {"channel": "Richtiger Kevin"},
+			 {"channel": "SpontanaBlack"}
 	]}
 ];
+
 
 function getSearchTerms() {
 	chrome.storage.sync.get(["searchTerms"], function(data) {
@@ -36,138 +38,183 @@ function getSearchTerms() {
 
 getSearchTerms();
 
+
+// Source: https://stackoverflow.com/a/39914235
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-var running = {"youtubeStartpage": false, "youtubeRecommended": false};
-var count = {"youtubeStartpage": 1, "youtubeRecommended": 1};
+// Source: https://stackoverflow.com/a/31007976
+String.prototype.format = function() {
+	return [...arguments].reduce((p, c) => p.replace(/%s/, c), this);
+}
 
-async function youtubeClear(elemList, title1, title2, channel1, channel2, elem1, elem2, countName, sleepMs) {
-	if (running[countName]) {
-		return;
+
+class Page {
+	constructor(name) {
+		this.name = name;
 	}
-	running[countName] = true;
-	elemList = $(elemList).length;
-	for (var i = count[countName]; i <= elemList; i++) {
-		await sleep(sleepMs);
-		var titleCc = $(title1 + i + title2).html();
-		var channelCc = $(channel1 + i + channel2).html();
-		if (titleCc && channelCc && $(elem1 + i + elem2).css("display") !== "none") {
-			titleCc = titleCc.trim();
-			channelCc = channelCc.trim();
-			var title = titleCc.toLowerCase();
-			var channel = channelCc.toLowerCase();
-			var found = false;
-			searchTermsLoop:
-			for (var j = 0; j < searchTerms.length; j++) {
-				var except = searchTerms[j]["except"] || {};
-				for (var l = 0; l < (searchTerms[j]["block"] || {}).length; l++) {
-					var block = searchTerms[j]["block"][l];
-					if (block["channel"] && block["channel"].toLowerCase() === channel && block["title"] && title.indexOf(block["title"].toLowerCase()) !== -1) {
-						found = true;
-						for (var k = 0; k < except.length; k++) {
-							if (except[k]["title"] && title.indexOf(except[k]["title"].toLowerCase()) !== -1) {
-								found = false;
-								break;
-							}
-						}
-					} else if (block["title"] && title.indexOf(block["title"].toLowerCase()) !== -1) {
-						found = true;
-						for (var k = 0; k < except.length; k++) {
-							if ((except[k]["channel"] && channel === except[k]["channel"].toLowerCase()) || (except[k]["title"] && title.indexOf(except[k]["title"].toLowerCase()) !== -1)) {
-								found = false;
-								break;
-							}
-						}
-					} else if (block["channel"] && block["channel"].toLowerCase() === channel) {
-						found = true;
-						for (var k = 0; k < except.length; k++) {
-							if (except[k]["title"] && title.indexOf(except[k]["title"].toLowerCase()) !== -1) {
-								found = false;
-								break;
-							}
-						}
-					}
-					if (found) {
-						$(elem1 + i + elem2).css("display", "none");
-						console.log('[Addon] ReactionClear: Removed "'+ titleCc +'" from "'+ channelCc +'"');
-						break searchTermsLoop;
-					}
-				}
-			}
-		} else if (! titleCc || ! channelCc) {
-			if (! $(title1 + (i + 1) + title2).html()) {
-				console.log(countName +" Title not found", i, title1 + i + title2, $(title1 + i + title2), titleCc, channelCc, $(title1 + (i + 1) + title2));
-				count[countName] = i;
-				running[countName] = false;
-				return;
-			} else {
-				console.log(countName +" Title2 not found", i, title1 + i + title2, $(title1 + i + title2), titleCc, channelCc, $(title1 + (i + 1) + title2));
-			}
+	
+	print(output) {
+		console.log("[ReactionClear]<%s>: %s".format(this.name, output));
+	}
+	
+	async detectReload(that) {
+		var detectorContent = $(that.detectorSelector).attr("href");
+		if (that.detectorContent !== detectorContent) {
+			that.print("Page reloaded");
+			that.detectorContent = detectorContent;
+			await sleep(1000);
+			that.clearCount = 1;
+			that.scrollPosition = 0;
+			that.clearPage();
 		}
 	}
-	running[countName] = false;
-}
-
-function youtubeStartpage() {
-	youtubeClear('.style-scope.ytd-rich-grid-renderer', 'ytd-rich-item-renderer.ytd-rich-grid-renderer:nth-child(', ') > div:nth-child(1) > ytd-rich-grid-video-renderer:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > h3:nth-child(1) > a:nth-child(2) > yt-formatted-string:nth-child(1)', 'ytd-rich-item-renderer.ytd-rich-grid-renderer:nth-child(', ') > div:nth-child(1) > ytd-rich-grid-video-renderer:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > ytd-video-meta-block:nth-child(2) > div:nth-child(1) > div:nth-child(1) > ytd-channel-name:nth-child(1) > div:nth-child(1) > div:nth-child(1) > yt-formatted-string:nth-child(1) > a:nth-child(1)', 'ytd-rich-item-renderer.ytd-rich-grid-renderer:nth-child(', ')', "youtubeStartpage", 50);
-}
-
-function youtubeRecommended() {
-	youtubeClear('.style-scope.ytd-compact-video-renderer', 'ytd-compact-video-renderer.style-scope:nth-child(', ') > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1) > h3:nth-child(1) > span:nth-child(2)', 'ytd-compact-video-renderer.style-scope:nth-child(', ') > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1) > div:nth-child(2) > ytd-video-meta-block:nth-child(1) > div:nth-child(1) > div:nth-child(1) > ytd-channel-name:nth-child(1) > div:nth-child(1) > div:nth-child(1) > yt-formatted-string:nth-child(1)', 'ytd-compact-video-renderer.style-scope:nth-child(', ') > div:nth-child(1)', "youtubeRecommended", 200);
-}
-
-function youtubeClearAll() {
-	console.log("youtubeClearAll called");
-	youtubeStartpage();
-	youtubeRecommended();
-}
-
-setTimeout(youtubeClearAll, 1000);
-
-var runningScroll = false;
-var oldScroll = $(document).scrollTop();
-$(document).on("scroll", function() {
-	var newScroll = $(document).scrollTop();
-	if (newScroll > oldScroll && ! runningScroll) {
-		oldScroll = newScroll;
-		runningScroll = true;
-		setTimeout(youtubeClearAll, 1000);
-		setTimeout(function() {
-			runningScroll = false;
-		}, 500);
+	
+	startDetector(cssSelector) {
+		this.detectorSelector = cssSelector;
+		setInterval(this.detectReload, 1000, this);
 	}
+	
+	async scroll(position) {
+		if (this.scrollRuns) {
+			return;
+		}
+		if ((this.scrollPosition || 0) < position) {
+			this.scrollRuns = true;
+			this.print("Scrolled down");
+			this.scrollPosition = position;
+			await sleep(1000);
+			this.scrollRuns = false;
+			this.clearPage();
+		}
+	}
+	
+	setClearOptions(options) {
+		this.clearList = options["list"];
+		this.clearElement = options["element"];
+		this.clearTitle = options["title"];
+		this.clearChannel = options["channel"];
+		this.clearDelay = options["delay"];
+	}
+	
+	async clearPage() {
+		this.print("clearPage()");
+		if (this.clearRuns) {
+			return;
+		}
+		this.clearRuns = true;
+		var list = $(this.clearList).length;
+		this.print(list);
+		for (var i = this.clearCount || 1; i <= list; i++) {
+			await sleep(this.clearDelay || 100);
+			this.print(i);
+			var titleCc = $(this.clearList + this.clearElement.format(i) + this.clearTitle).html();
+			var channelCc = $(this.clearList + this.clearElement.format(i) + this.clearChannel).html();
+			if (titleCc && channelCc && $(this.clearList + this.clearElement.format(i)).css("display") !== "none") {
+				titleCc = titleCc.trim();
+				channelCc = channelCc.trim();
+				var title = titleCc.toLowerCase();
+				var channel = channelCc.toLowerCase();
+				var found = false;
+				searchTermsLoop:
+				for (var j = 0; j < searchTerms.length; j++) {
+					var except = searchTerms[j]["except"] || {};
+					for (var l = 0; l < (searchTerms[j]["block"] || {}).length; l++) {
+						var block = searchTerms[j]["block"][l];
+						if (block["channel"] && block["channel"].toLowerCase() === channel && block["title"] && title.indexOf(block["title"].toLowerCase()) !== -1) {
+							found = true;
+							for (var k = 0; k < except.length; k++) {
+								if (except[k]["title"] && title.indexOf(except[k]["title"].toLowerCase()) !== -1) {
+									found = false;
+									break;
+								}
+							}
+						} else if (block["title"] && title.indexOf(block["title"].toLowerCase()) !== -1) {
+							found = true;
+							for (var k = 0; k < except.length; k++) {
+								if ((except[k]["channel"] && channel === except[k]["channel"].toLowerCase()) || (except[k]["title"] && title.indexOf(except[k]["title"].toLowerCase()) !== -1)) {
+									found = false;
+									break;
+								}
+							}
+						} else if (block["channel"] && block["channel"].toLowerCase() === channel) {
+							found = true;
+							for (var k = 0; k < except.length; k++) {
+								if (except[k]["title"] && title.indexOf(except[k]["title"].toLowerCase()) !== -1) {
+									found = false;
+									break;
+								}
+							}
+						}
+						if (found) {
+							$(this.clearList + this.clearElement.format(i)).css("display", "none");
+							this.print("Removed: %s from %s".format(titleCc, channelCc));
+							break searchTermsLoop;
+						}
+					}
+				}
+			} else if (! titleCc || ! channelCc) {
+				if (! $(this.clearList + this.clearElement.format(i + 1) + this.clearTitle).html()) {
+					this.print("Title not found");
+					console.log({"i": i,
+								 "elementString": this.clearList + this.clearElement.format(i),
+								 "element": $(this.clearList + this.clearElement.format(i)),
+								 "titleString": this.clearList + this.clearElement.format(i) + this.clearTitle,
+								 "title": titleCc,
+								 "channelString": this.clearList + this.clearElement.format(i) + this.clearChannel,
+								 "channel": channelCc,
+								 "nextString": this.clearList + this.clearElement.format(i + 1) + this.clearTitle,
+								 "nextElement": $(this.clearList + this.clearElement.format(i + 1) + this.clearTitle),
+								 "next": $(this.clearList + this.clearElement.format(i + 1) + this.clearTitle).html()});
+					this.clearCount = i;
+					this.clearRuns = false;
+					return;
+				} else {
+					this.print("Title skiped");
+					console.log({"i": i,
+								 "elementString": this.clearList + this.clearElement.format(i),
+								 "element": $(this.clearList + this.clearElement.format(i)),
+								 "titleString": this.clearList + this.clearElement.format(i) + this.clearTitle,
+								 "title": titleCc,
+								 "channelString": this.clearList + this.clearElement.format(i) + this.clearChannel,
+								 "channel": channelCc,
+								 "nextString": this.clearList + this.clearElement.format(i + 1) + this.clearTitle,
+								 "nextElement": $(this.clearList + this.clearElement.format(i + 1) + this.clearTitle),
+								 "next": $(this.clearList + this.clearElement.format(i + 1) + this.clearTitle).html()});
+				}
+			}
+		}
+		this.clearCount = i;
+		this.clearRuns = false;
+	}
+}
+
+
+var ytStartpage = new Page("ytStartpage");
+ytStartpage.startDetector('ytd-rich-item-renderer.ytd-rich-grid-renderer:nth-child(1) > div:nth-child(1) > ytd-rich-grid-video-renderer:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > h3:nth-child(1) > a:nth-child(2)');
+ytStartpage.setClearOptions({"list": 'ytd-rich-item-renderer.ytd-rich-grid-renderer',
+							 "element": ':nth-child(%s)',
+							 "title": ' > div:nth-child(1) > ytd-rich-grid-video-renderer:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > h3:nth-child(1) > a:nth-child(2) > yt-formatted-string:nth-child(1)',
+							 "channel": ' > div:nth-child(1) > ytd-rich-grid-video-renderer:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > ytd-video-meta-block:nth-child(2) > div:nth-child(1) > div:nth-child(1) > ytd-channel-name:nth-child(1) > div:nth-child(1) > div:nth-child(1) > yt-formatted-string:nth-child(1) > a:nth-child(1)',
+							 "delay": 50});
+
+
+var ytRecommended = new Page("ytRecommended");
+ytRecommended.startDetector('ytd-compact-video-renderer.style-scope:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1)');
+ytRecommended.setClearOptions({"list": 'ytd-compact-video-renderer.style-scope',
+							   "element": ':nth-child(%s)',
+							   "title": ' > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1) > h3:nth-child(1) > span:nth-child(2)',
+							   "channel": ' > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1) > div:nth-child(2) > ytd-video-meta-block:nth-child(1) > div:nth-child(1) > div:nth-child(1) > ytd-channel-name:nth-child(1) > div:nth-child(1) > div:nth-child(1) > yt-formatted-string:nth-child(1)',
+							   "delay": 200});
+
+
+$(document).on("scroll", function() {
+	var position = $(document).scrollTop();
+	ytStartpage.scroll(position);
+	ytRecommended.scroll(position);
 });
 
-var oldURL = document.URL;
-function urlChanged() {
-	var newURL = document.URL;
-	if (newURL !== oldURL) {
-		oldURL = newURL;
-		oldScroll = $(document).scrollTop();
-		count["youtubeStartpage"] = 1;
-		count["youtubeRecommended"] = 1;
-		setTimeout(youtubeClearAll, 1000);
-	}
-}
-
-setInterval(urlChanged, 1000);
-
-var listLength = {"youtubeStartpage": 0, "youtubeRecommended": 0};
-function checkLength() {
-	var youtubeStartpageLength = $('.style-scope.ytd-rich-grid-renderer').length;
-	var youtubeRecommendedLength = $('.style-scope.ytd-compact-video-renderer').length;
-	if (youtubeStartpageLength < listLength["youtubeStartpage"] || youtubeRecommendedLength < listLength["youtubeRecommended"]) {
-		count["youtubeStartpage"] = 1;
-		count["youtubeRecommended"] = 1;
-		setTimeout(youtubeClearAll, 1000);
-	}
-	listLength["youtubeStartpage"] = youtubeStartpageLength;
-	listLength["youtubeRecommended"] = youtubeRecommendedLength;
-}
-
-setInterval(checkLength, 1000);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === 1) {

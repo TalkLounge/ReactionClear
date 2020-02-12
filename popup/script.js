@@ -11,9 +11,9 @@ var searchTerms = [
 		 {"channel": "Mehr Anzeigen"}
 	 ], "except": [
 		 {"title": "Reved"}
-	]}, {"name": "ConCrafter",
+	]}, {"name": "Luca",
 		 "block": [
-			 {"channel": "ConCrafter"}
+			 {"channel": "Luca"}
 	]}, {"name": "Hochformat",
 		 "block": [
 			 {"channel": "Hochformat"}
@@ -22,7 +22,8 @@ var searchTerms = [
 			 {"channel": "JAUSE"}
 	]}, {"block": [
 			 {"channel": "Die Crew"},
-			 {"channel": "Richtiger Kevin"}
+			 {"channel": "Richtiger Kevin"},
+			 {"channel": "SpontanaBlack"}
 	]}
 ];
 
