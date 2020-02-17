@@ -111,12 +111,12 @@ function generateTable() {
 			}
 			
 			tdBlock = {"class": "block"};
-			if (j === block.length && except.length > block.length) {
+			if (j === block.length - 1 && except.length > block.length) {
 				tdBlock["rowspan"] = except.length - block.length + 1;
 			}
 			
 			tdExcept = {"class": "except"};
-			if (j === except.length && block.length > except.length) {
+			if (j === except.length - 1 && block.length > except.length) {
 				tdExcept["rowspan"] = block.length - except.length + 1;
 			}
 			
@@ -327,6 +327,7 @@ function getSearchTerms() {
 						}
 						if (! searchTerms[i]["block"][j]["channel"] && ! searchTerms[i]["block"][j]["title"]) {
 							searchTerms[i]["block"].splice(j, 1);
+							j--;
 						}
 					}
 					if (! searchTerms[i]["block"].length) {
@@ -343,6 +344,7 @@ function getSearchTerms() {
 						}
 						if (! searchTerms[i]["except"][j]["channel"] && ! searchTerms[i]["except"][j]["title"]) {
 							searchTerms[i]["except"].splice(j, 1);
+							j--;
 						}
 					}
 					if (! searchTerms[i]["except"].length) {
@@ -351,6 +353,7 @@ function getSearchTerms() {
 				}
 				if (! searchTerms[i]["block"] && ! searchTerms[i]["except"]) {
 					searchTerms.splice(i, 1);
+					i--;
 				}
 			}
 			
