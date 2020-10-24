@@ -1,11 +1,10 @@
-var searchTerms = [
+var list = []; /*[
 	{"name": "Reactions",
 	 "block": [
 		 {"title": "Reaktion"},
-		 {"title": "reagiert"},
-		 {"title": "reagiere"},
+		 {"title": "reagier"},
 		 {"title": "reaction"},
-		 {"title": "reacts"},
+		 {"title": "react"},
 		 {"title": "ungeklickt"},
 		 {"channel": "KuchenTV Uncut"},
 		 {"channel": "Mehr Anzeigen"}
@@ -25,19 +24,13 @@ var searchTerms = [
 			 {"channel": "Richtiger Kevin"},
 			 {"channel": "SpontanaBlack"}
 	]}
-];
+];*/
 
-
-function getSearchTerms() {
-	chrome.storage.sync.get(["searchTerms"], function(data) {
-		if (typeof(data) !== "undefined" && typeof(data["searchTerms"]) !== "undefined")  {
-			searchTerms = data["searchTerms"];
-		}
-	});
-}
-
-getSearchTerms();
-
+chrome.storage.sync.get(["list"], function(data) {
+	if (data && data["list"]) {
+		list = data["list"];
+	}
+});
 
 // Source: https://stackoverflow.com/a/39914235
 function sleep(ms) {
@@ -104,9 +97,9 @@ class Page {
 			return;
 		}
 		this.clearRuns = true;
-		var list = $(this.clearList).length;
-		this.print(list);
-		for (var i = this.clearCount || 1; i <= list; i++) {
+		var listLength = $(this.clearList).length;
+		this.print(listLength);
+		for (var i = this.clearCount || 1; i <= listLength; i++) {
 			await sleep(this.clearDelay || 100);
 			this.print(i);
 			var titleCc = $(this.clearList + this.clearElement.format(i) + this.clearTitle).html();
@@ -118,10 +111,10 @@ class Page {
 				var channel = channelCc.toLowerCase();
 				var found = false;
 				searchTermsLoop:
-				for (var j = 0; j < searchTerms.length; j++) {
-					var except = searchTerms[j]["except"] || {};
-					for (var l = 0; l < (searchTerms[j]["block"] || {}).length; l++) {
-						var block = searchTerms[j]["block"][l];
+				for (var j = 0; j < list.length; j++) {
+					var except = list[j]["except"] || {};
+					for (var l = 0; l < (list[j]["block"] || {}).length; l++) {
+						var block = list[j]["block"][l];
 						if (block["channel"] && block["channel"].toLowerCase() === channel && block["title"] && title.indexOf(block["title"].toLowerCase()) !== -1) {
 							found = true;
 							for (var k = 0; k < except.length; k++) {
@@ -192,11 +185,11 @@ class Page {
 
 
 var ytStartpage = new Page("ytStartpage");
-ytStartpage.startDetector('ytd-rich-item-renderer.ytd-rich-grid-renderer:nth-child(1) > div:nth-child(1) > ytd-rich-grid-video-renderer:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > h3:nth-child(1) > a:nth-child(2)');
+ytStartpage.startDetector('ytd-rich-item-renderer.ytd-rich-grid-renderer:nth-child(1) > div:nth-child(1) > ytd-rich-grid-media:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > h3:nth-child(1) > a:nth-child(2)');
 ytStartpage.setClearOptions({"list": 'ytd-rich-item-renderer.ytd-rich-grid-renderer',
 							 "element": ':nth-child(%s)',
-							 "title": ' > div:nth-child(1) > ytd-rich-grid-video-renderer:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > h3:nth-child(1) > a:nth-child(2) > yt-formatted-string:nth-child(1)',
-							 "channel": ' > div:nth-child(1) > ytd-rich-grid-video-renderer:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > ytd-video-meta-block:nth-child(2) > div:nth-child(1) > div:nth-child(1) > ytd-channel-name:nth-child(1) > div:nth-child(1) > div:nth-child(1) > yt-formatted-string:nth-child(1) > a:nth-child(1)',
+							 "title": ' > div:nth-child(1) > ytd-rich-grid-media:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > h3:nth-child(1) > a:nth-child(2) > yt-formatted-string:nth-child(1)',
+							 "channel": ' > div:nth-child(1) > ytd-rich-grid-media:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > ytd-video-meta-block:nth-child(2) > div:nth-child(1) > div:nth-child(1) > ytd-channel-name:nth-child(1) > div:nth-child(1) > div:nth-child(1) > yt-formatted-string:nth-child(1) > a:nth-child(1)',
 							 "delay": 50});
 
 

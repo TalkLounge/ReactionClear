@@ -1,367 +1,251 @@
-var searchTerms = [
-	{"name": "Reactions",
-	 "block": [
-		 {"title": "Reaktion"},
-		 {"title": "reagiert"},
-		 {"title": "reagiere"},
-		 {"title": "reaction"},
-		 {"title": "reacts"},
-		 {"title": "ungeklickt"},
-		 {"channel": "KuchenTV Uncut"},
-		 {"channel": "Mehr Anzeigen"}
-	 ], "except": [
-		 {"title": "Reved"}
-	]}, {"name": "Luca",
-		 "block": [
-			 {"channel": "Luca"}
-	]}, {"name": "Hochformat",
-		 "block": [
-			 {"channel": "Hochformat"}
-	]}, {"name": "JAUSE",
-		 "block": [
-			 {"channel": "JAUSE"}
-	]}, {"block": [
-			 {"channel": "Die Crew"},
-			 {"channel": "Richtiger Kevin"},
-			 {"channel": "SpontanaBlack"}
-	]}
-];
-
-function copyJSON(json) {
-	return JSON.parse(JSON.stringify(json));
-}
+var popup;
+var list = [];/*[{"desc": "Reactions", "block": [
+				{"title": "Reaktion"},
+				{"title": "reagier"},
+				{"title": "react"},
+				{"title": "ungeklickt"},
+				{"channel": "KuchenTV Uncut"},
+				{"channel": "Mehr Anzeigen"}]},
+			{"desc": "ConCrafter", "block": [
+				{"channel": "Luca"},
+				{"channel": "LUCREW"}]},
+			{"desc": "Hochformat", "block": [
+				{"channel": "Hochformat"}]},
+			{"desc": "JAUSE", "block": [
+				{"channel": "JAUSE"}]},
+			{"desc": "Mois", "block": [
+				{"channel": "Mois"}]},
+			{"desc": "Monte", "block": [
+				{"channel": "Die Crew"},
+				{"channel": "Richtiger Kevin"},
+				{"channel": "SpontanaBlack"}]},
+			{"desc": "Fake", "block": [
+				{"channel": "BILD"},
+				{"channel": "RT Deutsch"},
+				{"channel": "Late Night Berlin"},
+				{"channel": "Joko & Klaas"}]},
+			{"desc": "ASMR", "block": [
+				{"channel": "ASMR Janina"}]},
+			{"desc": "Trash", "block": [
+				{"channel": "Galileo"},
+				{"channel": "taff"},
+				{"channel": "Promiflash"}]},
+			{"desc": "Tourette", "block": [
+				{"channel": "Gewitter im Kopf"},
+				{"channel": "Gewitter im Stream"}]},
+			{"desc": "orangemorange", "block": [
+				{"channel": "orangemorange"}]},
+			{"desc": "cengo", "block": [
+				{"channel": "cengo"}]},
+			{"desc": "Master Your Mind", "block": [
+				{"channel": "Master Your Mind"}]},
+			{"desc": "Musik", "block": [
+				{"title": "Capital Bra"}],
+			 				  "except": [
+				{"channel": "Trap Nation"},
+				{"title": "RIN"},
+				{"title": "LEA"}]},
+			{"desc": "Autorennen", "block": [
+				{"channel": "Felix von der Laden"}]}];*/
 
 function newElement(tagName, attributes, content) {
 	var tag = document.createElement(tagName);
 	for (var key in attributes || {}) {
-		tag.setAttribute(key, attributes[key]);
+		if (attributes[key] !== undefined || attributes[key] !== null) {
+			tag.setAttribute(key, attributes[key]);
+		}
 	}
 	tag.innerHTML = content || "";
 	return tag.outerHTML;
 }
 
-function generateTable() {
-	var tbody = "";
-	var rowCountBlock = -1;
-	var rowCountExcept = -1;
-	for (var i = 0; i < searchTerms.length; i++) {
-		rowCountBlock++;
-		rowCountExcept++;
-		var searchTerm = searchTerms[i];
-		var name = searchTerm["name"] || "";
-		var block = searchTerm["block"] || [];
-		var except = searchTerm["except"] || [];
-		
-		var tdOuter = {};
-		var rowspan = Math.max(block.length, except.length);
-		if (rowspan > 1) {
-			tdOuter["rowspan"] = rowspan;
-			tdOuter["class"] = "align-middle";
-		}
-		
-		var tdBlock = {"class": "block"};
-		if (except.length > 1 && block.length <= 1) {
-			tdBlock["rowspan"] = except.length;
-		}
-		
-		var tdExcept = {"class": "except"};
-		if (block.length > 1 && except.length <= 1) {
-			tdExcept["rowspan"] = block.length;
-		}
-		
-		var tdBlockIcons = copyJSON(tdBlock);
-		tdBlockIcons["data-row"] = rowCountBlock;
-		tdBlockIcons["data-type"] = "block";
-		tdBlockIcons["data-typeid"] = 0;
-		
-		var tdExceptIcons = copyJSON(tdExcept);
-		tdExceptIcons["data-row"] = rowCountExcept;
-		tdExceptIcons["data-type"] = "except";
-		tdExceptIcons["data-typeid"] = 0;
-		
-		tbody += newElement("tr", {"data-id": i},
-							newElement("td", tdOuter, name) +
-							newElement("td", tdBlock, block[0] ? block[0]["channel"] || "" : "") +
-							newElement("td", tdBlock, block[0] ? block[0]["title"] || "" : "") +
-							newElement("td", tdBlockIcons,
-									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
-									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
-									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) +
-							newElement("td", tdExcept, except[0] ? except[0]["channel"] || "" : "") +
-							newElement("td", tdExcept, except[0] ? except[0]["title"] || "" : "") +
-							newElement("td", tdExceptIcons,
-									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
-									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
-									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) +
-							newElement("td", tdOuter,
-									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
-									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
-									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")));
-		
-		for (var j = 1; j < rowspan; j++) {
-			if (block[j]) {
-				rowCountBlock++;
-			}
-			
-			if (except[j]) {
-				rowCountExcept++;
-			}
-			
-			tdBlock = {"class": "block"};
-			if (j === block.length - 1 && except.length > block.length) {
-				tdBlock["rowspan"] = except.length - block.length + 1;
-			}
-			
-			tdExcept = {"class": "except"};
-			if (j === except.length - 1 && block.length > except.length) {
-				tdExcept["rowspan"] = block.length - except.length + 1;
-			}
-			
-			tdBlockIcons = copyJSON(tdBlock);
-			tdBlockIcons["data-row"] = rowCountBlock;
-			tdBlockIcons["data-type"] = "block";
-			tdBlockIcons["data-typeid"] = j;
-			
-			tdExceptIcons = copyJSON(tdExcept);
-			tdExceptIcons["data-row"] = rowCountExcept;
-			tdExceptIcons["data-type"] = "except";
-			tdExceptIcons["data-typeid"] = j;
-			
-			tbody += newElement("tr", {"data-id": i},
-								(block[j] ? newElement("td", tdBlock, block[j]["channel"] || "") : "") +
-								(block[j] ? newElement("td", tdBlock, block[j]["title"] || "") : "") +
-								(block[j] ? newElement("td", tdBlockIcons,
-													   newElement("span", {"class": "iconEdit"}, "&#x270F") +
-													   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-													   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
-													   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) : "") +
-								(except[j] ? newElement("td", tdExcept, except[j]["channel"] || "") : "") +
-								(except[j] ? newElement("td", tdExcept, except[j]["title"] || "") : "") +
-								(except[j] ? newElement("td", tdExceptIcons,
-														newElement("span", {"class": "iconEdit"}, "&#x270F") +
-														newElement("span", {"class": "iconAdd"}, "&#x2795") +
-														newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
-														newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) : ""));
-		}
-	}
-	
-	if (! searchTerms.length) {
-		searchTerms[0] = {"block": [{}], "except": [{}]};
-		tbody += newElement("tr", {"data-id": 0},
-							newElement("td") +
-							newElement("td", {"class": "block"}) +
-							newElement("td", {"class": "block"}) +
-							newElement("td", {"data-type": "block", "data-typeid": 0},
-									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
-									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
-									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) +
-							newElement("td", {"class": "except"}) +
-							newElement("td", {"class": "except"}) +
-							newElement("td", {"data-type": "except", "data-typeid": 0},
-									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
-									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
-									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")) +
-							newElement("td", null,
-									   newElement("span", {"class": "iconEdit"}, "&#x270F") +
-									   newElement("span", {"class": "iconAdd"}, "&#x2795") +
-									   newElement("span", {"class": "iconSave noneDisplay"}, "&#x2714") +
-									   newElement("span", {"class": "iconDelete noneDisplay"}, "&#x274c")));
-	}
-	
+function renderTable() {
 	$("tbody").empty();
-	$("tbody").append(tbody);
 	
-	$(".iconEdit").click(function() {
-		var span = $(this);
-		var td = span.parent();
-		var tr = td.parent();
+	for (var i = 0; i < (list.length || 1); i++) {
+		var listItem = list[i] || {};
 		
-		var dataType = td.data("type");
-		var dataTypeId = td.data("typeid");
-		if (typeof(dataType) === "undefined") {
-			var name = tr.find("td").eq(0);
-			name.toggleClass("no-padding");
-			name.html('<input type="text" class="form-control text-center inputs" value="'+ name.html() +'">');
-		} else {
-			var channel = tr.find("td."+ dataType).eq(0);
+		var blockLength = listItem.block ? listItem.block.length : 1;
+		var exceptLength = listItem.except ? listItem.except.length : 1;
+		var maxItems = blockLength > exceptLength ? blockLength : exceptLength;
+		
+		for (var j = 0; j < maxItems; j++) {
+			var htmlContent = "";
 			
-			var klass = "no-padding"
-			if (typeof(channel.attr("rowspan")) === "undefined") {
-				klass += " align-middle";
+			if (j === 0) {
+				htmlContent += newElement("td", {"rowspan": maxItems, "contenteditable": true, "data-col": 0, "data-listindex": i, "data-type": 0}, listItem.desc);
 			}
 			
-			channel.toggleClass(klass);
-			channel.html('<input type="text" class="form-control text-center inputs" value="'+ channel.html() +'">');
+			if ((listItem.block && listItem.block[j]) || j === 0) {
+				var rowspan = null;
+				
+				if (blockLength - 1 === j && blockLength < exceptLength) {
+					rowspan = exceptLength - blockLength + 1;
+				}
+				
+				htmlContent += newElement("td", {"rowspan": rowspan, "contenteditable": true, "data-col": 1, "data-listindex": i, "data-type": 1, "data-typeindex": j, "data-typetype": 0}, (listItem.block && listItem.block[j]) ? listItem.block[j].channel : null);
+				htmlContent += newElement("td", {"rowspan": rowspan, "contenteditable": true, "data-col": 2, "data-listindex": i, "data-type": 1, "data-typeindex": j, "data-typetype": 1}, (listItem.block && listItem.block[j]) ? listItem.block[j].title : null);
+			}
 			
-			var title = tr.find("td."+ dataType).eq(1);
-			title.toggleClass(klass);
-			title.html('<input type="text" class="form-control text-center inputs" value="'+ title.html() +'">');
+			if ((listItem.except && listItem.except[j]) || j === 0) {
+				var rowspan = null;
+				
+				if (exceptLength - 1 === j && exceptLength < blockLength) {
+					rowspan = blockLength - exceptLength + 1;
+				}
+				
+				htmlContent += newElement("td", {"rowspan": rowspan, "contenteditable": true, "data-col": 3, "data-listindex": i, "data-type": 2, "data-typeindex": j, "data-typetype": 0}, (listItem.except && listItem.except[j]) ? listItem.except[j].channel : null);
+				htmlContent += newElement("td", {"rowspan": rowspan, "contenteditable": true, "data-col": 4, "data-listindex": i, "data-type": 2, "data-typeindex": j, "data-typetype": 1}, (listItem.except && listItem.except[j]) ? listItem.except[j].title : null);
+			}
+			
+			$("tbody").append(newElement("tr", null, htmlContent));
+		}
+	}
+	
+	$("td").click(function() {
+		if (popup) {
+			popup.destroy();
+		}
+
+		var content = "";
+		
+		if ($(this).data("col") === 1 || $(this).data("col") === 2) {
+			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": $(this).data("type"), "data-typeindex": $(this).data("typeindex"), "data-action": 0}, "Add Block");
+			content += newElement("br");
+			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": $(this).data("type"), "data-typeindex": $(this).data("typeindex"), "data-action": 1}, "Delete Block");
+			content += newElement("br");
+			content += newElement("br");
+		} else if ($(this).data("col") === 3 || $(this).data("col") === 4) {
+			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": $(this).data("type"), "data-typeindex": $(this).data("typeindex"), "data-action": 0}, "Add Exception");
+			content += newElement("br");
+			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": $(this).data("type"), "data-typeindex": $(this).data("typeindex"), "data-action": 1}, "Delete Exception");
+			content += newElement("br");
+			content += newElement("br");
 		}
 		
-		td.find("span").eq(0).toggleClass("noneDisplay");
-		td.find("span").eq(1).toggleClass("noneDisplay");
-		td.find("span").eq(2).toggleClass("noneDisplay");
-		td.find("span").eq(3).toggleClass("noneDisplay");
-	});
-	$(".iconSave").click(function() {
-		var span = $(this);
-		var td = span.parent();
-		var tr = td.parent();
-		
-		var dataType = td.data("type");
-		var dataTypeId = td.data("typeid");
-		var dataId = tr.data("id");
-		if (typeof(dataType) === "undefined") {
-			var name = tr.find("td").eq(0);
-			var input = name.find("input").eq(0).val().trim();
+		content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": 0, "data-action": 0}, "Add Row");
+		content += newElement("br");
+		content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": 0, "data-action": 1}, "Delete Row");
+
+		popup = tippy(this, {
+			content: content,
+			interactive: true,
+			placement: "bottom",
+			interactiveBorder: 30,
+			allowHTML: true,
+			showOnCreate: true,
+		});
+
+		$("span").click(function() {
+			var listindex = $(this).data("listindex");
+			var typeindex = $(this).data("typeindex");
+			var type = $(this).data("type");
+			var action = $(this).data("action");
 			
-			name.toggleClass("no-padding");
-			name.html(input);
+			if (type === 0) {
+				if (action === 0) {
+					list.splice(listindex + 1, action, {});
+				} else if (action === 1) {
+					list.splice(listindex, action);
+				}
+			} else if (type === 1) {
+				if (action === 0) {
+					if (! list[listindex].block) {
+						list[listindex].block = [];
+					}
+					list[listindex].block.splice(typeindex + 1, action, {});
+				} else if (action === 1 && list[listindex].block) {
+					list[listindex].block.splice(typeindex, action);
+				}
+			} else if (type === 2) {
+				if (action === 0) {
+					if (! list[listindex].except) {
+						list[listindex].except = [];
+					}
+					list[listindex].except.splice(typeindex + 1, action, {});
+				} else if (action === 1 && list[listindex].except) {
+					list[listindex].except.splice(typeindex, action);
+				}
+			}
+			
+			chrome.storage.sync.set({"list": list});
+			renderTable();
+		});
+	});
+	
+	$("td").bind("input", function() {
+		var listindex = $(this).data("listindex");
+		var typeindex = $(this).data("typeindex");
+		var type = $(this).data("type");
+		var typetype = $(this).data("typetype");
+		
+		var input = $(this).text();
+		
+		if (! list[listindex]) {
+			list[listindex] = {};
+		}
+		
+		if (type === 0) {
+			if (input.length > 0) {
+				list[listindex].desc = input;
+			} else {
+				list[listindex].desc = null;
+			}
+		} else if (type === 1) {
+			if (! list[listindex].block) {
+				list[listindex].block = [];
+			}
+			
+			if (! list[listindex].block[typeindex]) {
+				list[listindex].block[typeindex] = {};
+			}
 			
 			if (input.length > 0) {
-				searchTerms[dataId]["name"] = input;
+				if (typetype === 0) {
+					list[listindex].block[typeindex].channel = input;
+				} else if (typetype === 1) {
+					list[listindex].block[typeindex].title = input;
+				}
 			} else {
-				delete searchTerms[dataId]["name"];
+				if (typetype === 0) {
+					list[listindex].block[typeindex].channel = null;
+				} else if (typetype === 1) {
+					list[listindex].block[typeindex].title = null;
+				}
+			}
+		} else if (type === 2) {
+			if (! list[listindex].except) {
+				list[listindex].except = [];
 			}
 			
-			chrome.storage.sync.set({"searchTerms": searchTerms});
-			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
-		} else {
-			var channel = tr.find("td."+ dataType).eq(0);
-			var channelInput = channel.find("input").eq(0).val().trim();
-			
-			var title = tr.find("td."+ dataType).eq(1);
-			var titleInput = title.find("input").eq(0).val().trim();
-			
-			var klass = "no-padding"
-			if (typeof(channel.attr("rowspan")) === "undefined") {
-				klass += " align-middle";
+			if (! list[listindex].except[typeindex]) {
+				list[listindex].except[typeindex] = {};
 			}
 			
-			channel.toggleClass(klass);
-			channel.html(channelInput);
-			
-			title.toggleClass(klass);
-			title.html(titleInput);
-			
-			if (typeof(searchTerms[dataId][dataType]) === "undefined") {
-				searchTerms[dataId][dataType] = [];
+			if (input.length > 0) {
+				if (typetype === 0) {
+					list[listindex].except[typeindex].channel = input;
+				} else if (typetype === 1) {
+					list[listindex].except[typeindex].title = input;
+				}
+			} else {
+				if (typetype === 0) {
+					list[listindex].except[typeindex].channel = null;
+				} else if (typetype === 1) {
+					list[listindex].except[typeindex].title = null;
+				}
 			}
-			
-			searchTerms[dataId][dataType][dataTypeId] = {"channel": channelInput, "title": titleInput};
-			chrome.storage.sync.set({"searchTerms": searchTerms});
-			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
 		}
-		td.find("span").eq(0).toggleClass("noneDisplay");
-		td.find("span").eq(1).toggleClass("noneDisplay");
-		td.find("span").eq(2).toggleClass("noneDisplay");
-		td.find("span").eq(3).toggleClass("noneDisplay");
-	});
-	$(".iconDelete").click(function() {
-		var span = $(this);
-		var td = span.parent();
-		var tr = td.parent();
 		
-		var dataType = td.data("type");
-		var dataTypeId = td.data("typeid");
-		var dataId = tr.data("id");
-		if (typeof(dataType) === "undefined") {
-			searchTerms.splice(dataId, 1);
-			
-			chrome.storage.sync.set({"searchTerms": searchTerms});
-			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
-		} else {
-			if (typeof(searchTerms[dataId][dataType]) === "undefined") {
-				searchTerms[dataId][dataType] = [];
-			}
-			
-			searchTerms[dataId][dataType].splice(dataTypeId, 1);
-			if (! searchTerms[dataId][dataType].length) {
-				delete searchTerms[dataId][dataType];
-			}
-			
-			chrome.storage.sync.set({"searchTerms": searchTerms});
-			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
-		}
-		generateTable();
-	});
-	$(".iconAdd").click(function() {
-		var span = $(this);
-		var td = span.parent();
-		var tr = td.parent();
-		
-		var dataType = td.data("type");
-		var dataTypeId = td.data("typeid");
-		var dataId = tr.data("id");
-		if (typeof(dataType) === "undefined") {
-			searchTerms.splice(dataId + 1, 0, {});
-		} else {
-			if (typeof(searchTerms[dataId][dataType]) === "undefined") {
-				searchTerms[dataId][dataType] = [{}];
-			}
-			
-			searchTerms[dataId][dataType].splice(dataTypeId + 1, 0, {});
-		}
-		generateTable();
-	});
+		chrome.storage.sync.set({"list": list});
+    });
 }
 
-function getSearchTerms() {
-	chrome.storage.sync.get(["searchTerms"], function(data) {
-		if (typeof(data) !== "undefined" && typeof(data["searchTerms"]) !== "undefined")  {
-			searchTerms = data["searchTerms"];
-			
-			for (var i = 0; i < searchTerms.length; i++) {
-				if (searchTerms[i]["block"]) {
-					for (var j = 0; j < searchTerms[i]["block"].length; j++) {
-						if (! searchTerms[i]["block"][j]["channel"]) {
-							delete searchTerms[i]["block"][j]["channel"];
-						}
-						if (! searchTerms[i]["block"][j]["title"]) {
-							delete searchTerms[i]["block"][j]["title"];
-						}
-						if (! searchTerms[i]["block"][j]["channel"] && ! searchTerms[i]["block"][j]["title"]) {
-							searchTerms[i]["block"].splice(j, 1);
-							j--;
-						}
-					}
-					if (! searchTerms[i]["block"].length) {
-						delete searchTerms[i]["block"];
-					}
-				}
-				if (searchTerms[i]["except"]) {
-					for (var j = 0; j < searchTerms[i]["except"].length; j++) {
-						if (! searchTerms[i]["except"][j]["channel"]) {
-							delete searchTerms[i]["except"][j]["channel"];
-						}
-						if (! searchTerms[i]["except"][j]["title"]) {
-							delete searchTerms[i]["except"][j]["title"];
-						}
-						if (! searchTerms[i]["except"][j]["channel"] && ! searchTerms[i]["except"][j]["title"]) {
-							searchTerms[i]["except"].splice(j, 1);
-							j--;
-						}
-					}
-					if (! searchTerms[i]["except"].length) {
-						delete searchTerms[i]["except"];
-					}
-				}
-				if (! searchTerms[i]["block"] && ! searchTerms[i]["except"]) {
-					searchTerms.splice(i, 1);
-					i--;
-				}
-			}
-			
-			chrome.storage.sync.set({"searchTerms": searchTerms});
-			chrome.runtime.sendMessage({"action": 1, "searchTerms": searchTerms});
-		}
-		generateTable();
-	});
-}
+chrome.storage.sync.get(["list"], function(data) {
+	if (data && data["list"]) {
+		list = data["list"];
+	}
+	renderTable();
+});
 
-getSearchTerms();
+chrome.storage.sync.set({"searchTerms": null}); //Legacy
