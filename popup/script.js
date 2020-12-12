@@ -48,17 +48,6 @@ var list = [];/*[{"desc": "Reactions", "block": [
 			{"desc": "Autorennen", "block": [
 				{"channel": "Felix von der Laden"}]}];*/
 
-function newElement(tagName, attributes, content) {
-	var tag = document.createElement(tagName);
-	for (var key in attributes || {}) {
-		if (attributes[key] !== undefined || attributes[key] !== null) {
-			tag.setAttribute(key, attributes[key]);
-		}
-	}
-	tag.innerHTML = content || "";
-	return tag.outerHTML;
-}
-
 function renderTable() {
 	$("tbody").empty();
 	
@@ -73,7 +62,7 @@ function renderTable() {
 			var htmlContent = "";
 			
 			if (j === 0) {
-				htmlContent += newElement("td", {"rowspan": maxItems, "contenteditable": true, "data-col": 0, "data-listindex": i, "data-type": 0}, listItem.desc);
+				htmlContent += newElement("td", {"rowspan": maxItems, "height": 34.6, "contenteditable": true, "data-col": 0, "data-listindex": i, "data-type": 0}, listItem.desc);
 			}
 			
 			if ((listItem.block && listItem.block[j]) || j === 0) {
@@ -83,8 +72,8 @@ function renderTable() {
 					rowspan = exceptLength - blockLength + 1;
 				}
 				
-				htmlContent += newElement("td", {"rowspan": rowspan, "contenteditable": true, "data-col": 1, "data-listindex": i, "data-type": 1, "data-typeindex": j, "data-typetype": 0}, (listItem.block && listItem.block[j]) ? listItem.block[j].channel : null);
-				htmlContent += newElement("td", {"rowspan": rowspan, "contenteditable": true, "data-col": 2, "data-listindex": i, "data-type": 1, "data-typeindex": j, "data-typetype": 1}, (listItem.block && listItem.block[j]) ? listItem.block[j].title : null);
+				htmlContent += newElement("td", {"rowspan": rowspan, "height": 34.6, "contenteditable": true, "data-col": 1, "data-listindex": i, "data-type": 1, "data-typeindex": j, "data-typetype": 0}, (listItem.block && listItem.block[j]) ? listItem.block[j].channel : null);
+				htmlContent += newElement("td", {"rowspan": rowspan, "height": 34.6, "contenteditable": true, "data-col": 2, "data-listindex": i, "data-type": 1, "data-typeindex": j, "data-typetype": 1}, (listItem.block && listItem.block[j]) ? listItem.block[j].title : null);
 			}
 			
 			if ((listItem.except && listItem.except[j]) || j === 0) {
@@ -94,8 +83,8 @@ function renderTable() {
 					rowspan = blockLength - exceptLength + 1;
 				}
 				
-				htmlContent += newElement("td", {"rowspan": rowspan, "contenteditable": true, "data-col": 3, "data-listindex": i, "data-type": 2, "data-typeindex": j, "data-typetype": 0}, (listItem.except && listItem.except[j]) ? listItem.except[j].channel : null);
-				htmlContent += newElement("td", {"rowspan": rowspan, "contenteditable": true, "data-col": 4, "data-listindex": i, "data-type": 2, "data-typeindex": j, "data-typetype": 1}, (listItem.except && listItem.except[j]) ? listItem.except[j].title : null);
+				htmlContent += newElement("td", {"rowspan": rowspan, "height": 34.6, "contenteditable": true, "data-col": 3, "data-listindex": i, "data-type": 2, "data-typeindex": j, "data-typetype": 0}, (listItem.except && listItem.except[j]) ? listItem.except[j].channel : null);
+				htmlContent += newElement("td", {"rowspan": rowspan, "height": 34.6, "contenteditable": true, "data-col": 4, "data-listindex": i, "data-type": 2, "data-typeindex": j, "data-typetype": 1}, (listItem.except && listItem.except[j]) ? listItem.except[j].title : null);
 			}
 			
 			$("tbody").append(newElement("tr", null, htmlContent));
@@ -108,24 +97,20 @@ function renderTable() {
 		}
 
 		var content = "";
-		
-		if ($(this).data("col") === 1 || $(this).data("col") === 2) {
+
+		if ($(this).data("col") === 0) {
+			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": 0, "data-action": 0}, "Add Row");
+			content += newElement("br");
+			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": 0, "data-action": 1}, "Delete Row");
+		} else if ($(this).data("col") === 1 || $(this).data("col") === 2) {
 			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": $(this).data("type"), "data-typeindex": $(this).data("typeindex"), "data-action": 0}, "Add Block");
 			content += newElement("br");
 			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": $(this).data("type"), "data-typeindex": $(this).data("typeindex"), "data-action": 1}, "Delete Block");
-			content += newElement("br");
-			content += newElement("br");
 		} else if ($(this).data("col") === 3 || $(this).data("col") === 4) {
 			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": $(this).data("type"), "data-typeindex": $(this).data("typeindex"), "data-action": 0}, "Add Exception");
 			content += newElement("br");
 			content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": $(this).data("type"), "data-typeindex": $(this).data("typeindex"), "data-action": 1}, "Delete Exception");
-			content += newElement("br");
-			content += newElement("br");
 		}
-		
-		content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": 0, "data-action": 0}, "Add Row");
-		content += newElement("br");
-		content += newElement("span", {"data-listindex": $(this).data("listindex"), "data-type": 0, "data-action": 1}, "Delete Row");
 
 		popup = tippy(this, {
 			content: content,
@@ -169,6 +154,7 @@ function renderTable() {
 			}
 			
 			chrome.storage.sync.set({"list": list});
+			chrome.runtime.sendMessage({"action": 1, "list": list});
 			renderTable();
 		});
 	});
@@ -238,9 +224,11 @@ function renderTable() {
 		}
 		
 		chrome.storage.sync.set({"list": list});
+		chrome.runtime.sendMessage({"action": 1, "list": list});
     });
 }
 
+// Initialize list from storage and render table
 chrome.storage.sync.get(["list"], function(data) {
 	if (data && data["list"]) {
 		list = data["list"];
@@ -248,4 +236,5 @@ chrome.storage.sync.get(["list"], function(data) {
 	renderTable();
 });
 
-chrome.storage.sync.set({"searchTerms": null}); //Legacy
+//Legacy
+chrome.storage.sync.set({"searchTerms": null});
